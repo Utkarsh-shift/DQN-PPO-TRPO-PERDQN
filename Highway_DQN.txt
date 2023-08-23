@@ -1,0 +1,86 @@
+!pip install highway-env
+!pip install gymnasium
+!apt-get install x11-utils > /dev/null 2>&1 
+!pip install pyglet > /dev/null 2>&1 
+!apt-get install -y xvfb python-opengl > /dev/null 2>&1
+import os
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+!pip install gym pyvirtualdisplay > /dev/null 2>&1
+!pip install --upgrade setuptools
+!pip install ez_setup
+!pip install gymnasium
+import gymnasium as gym
+!pip install git+https://github.com/eleurent/highway-env#egg=highway-env
+import highway_env
+highway_env.register_highway_envs()
+
+# Agent
+!pip install git+https://github.com/eleurent/rl-agents#egg=rl-agents
+
+# Visualisation utils
+!pip install moviepy
+!pip install imageio_ffmpeg
+import sys
+%load_ext tensorboard
+!pip install tensorboardx gym pyvirtualdisplay
+!apt-get install -y xvfb python-opengl ffmpeg
+!git clone https://github.com/eleurent/highway-env.git 2> /dev/null
+sys.path.insert(0, '/content/highway-env/scripts/')
+from utils import show_videos
+!pip install setuptools
+!pip install --upgrade setuptools google-colab
+!pip install -U pip
+!pip install ez_setup
+!pip install git+https://github.com/DLR-RM/stable-baselines3@feat/gymnasium-support
+!pip install git+https://github.com/Stable-Baselines-Team/stable-baselines3-contrib@feat/gymnasium-support
+!pip install git+https://github.com/bstriner/gym-traffic.git
+!pip install gym-traffic
+!pip install gym-traffic --upgrade
+!pip install stable_baselines3
+!pip install stable_baselines3[extra]
+!pip install gym-traffic
+# Install environment and agent
+!pip install highway-env
+# TODO: we use the bleeding edge version because the current stable version does not support the latest gym>=0.21 versions. Revert back to stable at the next SB3 release.
+!pip install git+https://github.com/DLR-RM/stable-baselines3
+
+# Environment
+import gym
+import highway_env
+
+# Agent
+from stable_baselines3 import DQN
+
+# Visualization utils
+%load_ext tensorboard
+import sys
+from tqdm.notebook import trange
+!pip install tensorboardx gym pyvirtualdisplay
+!apt-get install -y xvfb python-opengl ffmpeg
+!git clone https://github.com/eleurent/highway-env.git 2> /dev/null
+sys.path.insert(0, '/content/highway-env/scripts/')
+from utils import record_videos, show_videos
+%tensorboard --logdir "highway_dqn"
+model = DQN('MlpPolicy', "highway-fast-v0",
+                policy_kwargs=dict(net_arch=[256, 256]),
+                learning_rate=5e-4,
+                buffer_size=15000,
+                learning_starts=200,
+                batch_size=32,
+                gamma=0.8,
+                train_freq=1,
+                gradient_steps=1,
+                target_update_interval=50,
+                exploration_fraction=0.7,
+                verbose=1,
+                tensorboard_log="highway_dqn/")
+model.learn(int(1e4))
+env = gym.make("highway-fast-v0")
+env = record_videos(env)
+for episode in trange(3, desc="Test episodes"):
+    obs, done = env.reset(), False
+    while not done:
+        action, _ = model.predict(obs, deterministic=True)
+        obs, reward, done, info = env.step(int(action))
+env.close()
+show_videos()
